@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Market Brief — 시장 대시보드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <h1>Daily Market Brief</h1>
+      <div class="meta">
+        <span id="session-badge" class="badge">—</span>
+        <span id="generated-at" class="generated">불러오는 중…</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="app">
+    <section id="regime" class="regime-section"></section>
+
+    <nav id="category-nav" class="category-nav"></nav>
+
+    <section id="indicators" class="indicator-grid"></section>
+  </main>
+
+  <footer class="footer">
+    <p>지표는 평일 오전·오후(KST) 자동 갱신됩니다. 본 자료는 투자 참고용이며 투자 권유가 아닙니다.</p>
+  </footer>
+
+  <!-- 차트 모달 -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <button id="modal-close" class="modal-close" aria-label="닫기">×</button>
+      <h2 id="modal-title"></h2>
+      <div id="modal-meta" class="modal-meta"></div>
+      <div class="chart-wrap"><canvas id="modal-chart"></canvas></div>
+      <p id="modal-comment" class="modal-comment"></p>
+      <p id="modal-mdd" class="modal-mdd"></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
