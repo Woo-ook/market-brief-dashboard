@@ -63,5 +63,18 @@
     "fear_buy": 19,
     "mania_reduce": 54,
     "final_timing": "관망 / 눌림 대기"
+  },
+  {
+    "run_date": "2026-06-24 18:07",
+    "final_label": "Risk-On 쏠림장",
+    "risk": 84,
+    "overheating": 62,
+    "breadth": 40,
+    "fx_stress": 60,
+    "stability": 100,
+    "entry": 29,
+    "fear_buy": 12,
+    "mania_reduce": 64,
+    "final_timing": "관망 / 눌림 대기"
   }
 ]
