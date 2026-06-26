@@ -115,5 +115,18 @@
     "fear_buy": 20,
     "mania_reduce": 72,
     "final_timing": "추격 금지 / 비중 점검"
+  },
+  {
+    "run_date": "2026-06-26 18:08",
+    "final_label": "Neutral",
+    "risk": 64,
+    "overheating": 35,
+    "breadth": 12,
+    "fx_stress": 60,
+    "stability": 72,
+    "entry": 13,
+    "fear_buy": 23,
+    "mania_reduce": 59,
+    "final_timing": "관망 / 눌림 대기"
   }
 ]
