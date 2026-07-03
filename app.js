@@ -1,35 +1,107 @@
-/* Daily Market Brief — 대시보드 렌더링 */
+/* Daily Market Brief — 대시보드 렌더링 (거시 + 산업별 2페이지) */
 
-const CATEGORY_ORDER = ["이격도", "환율", "금리", "위험·변동성", "기타"];
+/* 페이지 설정: 파일명·카테고리 순서·국면 요약 표시 여부 */
+const PAGES = {
+  macro: {
+    file: "data.json",
+    categories: ["이격도", "환율", "금리", "위험·변동성", "기타"],
+    showRegime: true,
+  },
+  sector: {
+    file: "sector.json",
+    categories: ["반도체", "조선", "소프트웨어"],
+    showRegime: false,
+  },
+};
+
 const SIG_COLORS = ["#2ecc71", "#f1c40f", "#e67e22", "#e74c3c"];
 
-let DATA = null;
+let currentPage = "macro";
+const PAGE_DATA = { macro: null, sector: null };
 let modalChart = null;
 const sparkCharts = [];
 
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
+  /* 1) 거시 데이터(필수) 로딩 */
   try {
-    const res = await fetch("data.json?t=" + Date.now());
-    if (!res.ok) throw new Error("data.json 응답 " + res.status);
-    DATA = await res.json();
+    PAGE_DATA.macro = await loadJson(PAGES.macro.file);
   } catch (e) {
     document.getElementById("generated-at").textContent = "데이터를 불러오지 못했습니다.";
     console.error(e);
     return;
   }
 
-  document.getElementById("session-badge").textContent = DATA.session || "브리핑";
-  document.getElementById("generated-at").textContent = "기준: " + (DATA.generated_at || "");
+  /* 2) 산업 데이터(선택) 로딩 — 파일이 없어도 거시 페이지는 정상 동작 */
+  try {
+    PAGE_DATA.sector = await loadJson(PAGES.sector.file);
+  } catch (e) {
+    console.warn("sector.json 없음 또는 로딩 실패 — 산업 탭은 안내만 표시됩니다.", e);
+  }
 
-  renderRegime(DATA.regime);
-  renderNav();
-  renderIndicators("전체");
+  const macro = PAGE_DATA.macro;
+  document.getElementById("session-badge").textContent = macro.session || "브리핑";
+  document.getElementById("generated-at").textContent = "기준: " + (macro.generated_at || "");
+
+  renderRegime(macro.regime);
+  setupPageTabs();
   setupModal();
+  renderPage("macro");
 }
 
-/* ── 국면 요약 ── */
+async function loadJson(file) {
+  const res = await fetch(file + "?t=" + Date.now());
+  if (!res.ok) throw new Error(file + " 응답 " + res.status);
+  return res.json();
+}
+
+/* ── 페이지 탭 ── */
+function setupPageTabs() {
+  document.querySelectorAll(".page-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.page === currentPage) return;
+      document.querySelectorAll(".page-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderPage(btn.dataset.page);
+    });
+  });
+}
+
+function renderPage(page) {
+  currentPage = page;
+  const cfg = PAGES[page];
+  const data = PAGE_DATA[page];
+
+  /* 국면 요약은 거시 페이지에서만 표시 */
+  document.getElementById("regime").style.display = cfg.showRegime ? "" : "none";
+
+  /* 산업 페이지 기준 시각 표시 */
+  const meta = document.getElementById("sector-meta");
+  if (page === "sector" && data) {
+    meta.textContent = "산업 지표 기준: " + (data.generated_at || "");
+    meta.style.display = "";
+  } else {
+    meta.style.display = "none";
+  }
+
+  const nav = document.getElementById("category-nav");
+  const grid = document.getElementById("indicators");
+
+  /* 데이터가 없는 페이지(예: sector.json 미배포)는 안내만 표시 */
+  if (!data || !Array.isArray(data.indicators) || !data.indicators.length) {
+    nav.innerHTML = "";
+    while (sparkCharts.length) sparkCharts.pop().destroy();
+    grid.innerHTML =
+      '<div class="cat-group-title">산업별 지표 데이터(sector.json)가 아직 없습니다. 수집 스크립트 실행 후 갱신됩니다.</div>';
+    return;
+  }
+
+  renderNav(cfg, data);
+  renderIndicators(cfg, data, "전체");
+}
+
+/* ── 국면 요약 (거시 전용) ── */
 function renderRegime(r) {
   if (!r) return;
   const el = document.getElementById("regime");
@@ -50,7 +122,6 @@ function renderRegime(r) {
       const v = r.scores[key];
       if (v === undefined || v === null) return "";
       const pct = Math.max(0, Math.min(100, v));
-      // pos: 높을수록 초록 / neg: 높을수록 빨강
       const hue = dir === "pos" ? pct * 1.2 : (100 - pct) * 1.2;
       return `<div class="score-item">
         <div class="score-name">${name}<span class="score-val">${v}</span></div>
@@ -77,8 +148,8 @@ function renderRegime(r) {
 }
 
 /* ── 카테고리 네비 ── */
-function renderNav() {
-  const cats = ["전체", ...CATEGORY_ORDER.filter((c) => DATA.indicators.some((i) => i.category === c))];
+function renderNav(cfg, data) {
+  const cats = ["전체", ...cfg.categories.filter((c) => data.indicators.some((i) => i.category === c))];
   const nav = document.getElementById("category-nav");
   nav.innerHTML = cats
     .map((c, idx) => `<button class="cat-btn${idx === 0 ? " active" : ""}" data-cat="${c}">${c}</button>`)
@@ -87,25 +158,26 @@ function renderNav() {
     btn.addEventListener("click", () => {
       nav.querySelectorAll(".cat-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      renderIndicators(btn.dataset.cat);
+      renderIndicators(cfg, data, btn.dataset.cat);
     });
   });
 }
 
 /* ── 지표 카드 ── */
-function renderIndicators(filterCat) {
-  // 기존 스파크라인 정리
+function renderIndicators(cfg, data, filterCat) {
   while (sparkCharts.length) sparkCharts.pop().destroy();
 
   const grid = document.getElementById("indicators");
   grid.innerHTML = "";
 
-  const cats = CATEGORY_ORDER.filter((c) =>
-    DATA.indicators.some((i) => i.category === c && (filterCat === "전체" || i.category === filterCat))
+  const cats = cfg.categories.filter((c) =>
+    data.indicators.some((i) => i.category === c && (filterCat === "전체" || i.category === filterCat))
   );
 
   cats.forEach((cat) => {
-    const items = DATA.indicators.filter((i) => i.category === cat);
+    const items = data.indicators.filter(
+      (i) => i.category === cat && (filterCat === "전체" || i.category === filterCat)
+    );
     if (!items.length) return;
     if (filterCat === "전체") {
       const title = document.createElement("div");
@@ -116,8 +188,7 @@ function renderIndicators(filterCat) {
     items.forEach((ind) => grid.appendChild(makeCard(ind)));
   });
 
-  // 카드 그려진 뒤 스파크라인 생성
-  DATA.indicators.forEach((ind) => {
+  data.indicators.forEach((ind) => {
     const canvas = document.getElementById("spark-" + cssId(ind.name));
     if (canvas && ind.chart) drawSparkline(canvas, ind);
   });
