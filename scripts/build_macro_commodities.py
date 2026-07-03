@@ -5,8 +5,9 @@ Append/replace commodity indicators in data.json for Daily Market Brief.
 
 Adds category: 원자재
 Adds indicators: 금, 은, 구리
-Metric: 50-day disparity = close / MA50 * 100
+Signal metric: 50-day disparity = close / MA50 * 100
 Thresholds: each indicator's own 5-year disparity distribution p70 / p90 / p97
+Chart shown on dashboard: raw closing price (not the disparity series)
 
 Usage:
   python scripts/build_macro_commodities.py
@@ -176,8 +177,8 @@ def make_card(spec: CommoditySpec) -> Dict[str, Any]:
     prev_disp = float(disparity.iloc[-2]) if len(disparity) >= 2 else None
     state, signal_level = classify_disparity(last_disp, strong, overheat, extreme)
 
-    labels = [idx.strftime("%Y-%m-%d") for idx in disparity.tail(260).index]
-    disp_tail = [round(float(x), 2) for x in disparity.tail(260).values]
+    price_labels = [idx.strftime("%Y-%m-%d") for idx in close.tail(260).index]
+    price_tail = [round(float(x), 4) for x in close.tail(260).values]
 
     source = spec.source_label if used_ticker == spec.ticker else f"yfinance:{used_ticker} fallback"
     date_txt = close.index[-1].strftime("%Y-%m-%d")
@@ -201,11 +202,10 @@ def make_card(spec: CommoditySpec) -> Dict[str, Any]:
         "source": source,
         "ok": True,
         "chart": {
-            "type": "disparity",
-            "unit": "",
-            "labels": labels,
-            "series": {"disparity": disp_tail},
-            "refs": {"strong": strong, "overheat": overheat, "extreme": extreme},
+            "type": "value",
+            "unit": spec.unit,
+            "labels": price_labels,
+            "series": {"value": price_tail},
         },
     }
 

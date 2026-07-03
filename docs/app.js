@@ -1,4 +1,4 @@
-/* Daily Market Brief — 대시보드 렌더링 (거시 + 산업별 2페이지) */
+/* Daily Market Brief — 대시보드 렌더링 (거시 / 산업별 주가 / 산업별 선행지표 3페이지) */
 
 /* 페이지 설정: 파일명·카테고리 순서·국면 요약 표시 여부 */
 const PAGES = {
@@ -9,6 +9,11 @@ const PAGES = {
   },
   sector: {
     file: "sector.json",
+    categories: ["반도체", "조선", "소프트웨어"],
+    showRegime: false,
+  },
+  leading: {
+    file: "leading.json",
     categories: ["반도체", "조선", "소프트웨어"],
     showRegime: false,
   },
@@ -40,11 +45,11 @@ async function init() {
     console.warn("sector.json 없음 또는 로딩 실패 — 산업 탭은 안내만 표시됩니다.", e);
   }
 
-  /* 3) 선행지표(선택) 로딩 — 파일이 없어도 산업 주가 카드는 정상 동작 */
+  /* 3) 산업별 선행지표(선택) 로딩 — 파일이 없어도 다른 탭은 정상 동작 */
   try {
-    PAGE_DATA.leading = await loadJson("leading.json");
+    PAGE_DATA.leading = await loadJson(PAGES.leading.file);
   } catch (e) {
-    console.warn("leading.json 없음 또는 로딩 실패 — 선행지표 섹션은 생략됩니다.", e);
+    console.warn("leading.json 없음 또는 로딩 실패 — 선행지표 탭은 안내만 표시됩니다.", e);
   }
 
   const macro = PAGE_DATA.macro;
@@ -86,9 +91,10 @@ function renderPage(page) {
   /* 산업 페이지 기준 시각 표시 */
   const meta = document.getElementById("sector-meta");
   if (page === "sector" && data) {
-    const lead = PAGE_DATA.leading;
-    const leadTxt = lead && lead.generated_at ? " · 선행지표 기준: " + lead.generated_at : "";
-    meta.textContent = "산업 주가 기준: " + (data.generated_at || "") + leadTxt;
+    meta.textContent = "산업 주가 기준: " + (data.generated_at || "");
+    meta.style.display = "";
+  } else if (page === "leading" && data) {
+    meta.textContent = "선행지표 기준: " + (data.generated_at || "");
     meta.style.display = "";
   } else {
     meta.style.display = "none";
@@ -97,12 +103,11 @@ function renderPage(page) {
   const nav = document.getElementById("category-nav");
   const grid = document.getElementById("indicators");
 
-  /* 데이터가 없는 페이지(예: sector.json 미배포)는 안내만 표시 */
+  /* 데이터가 없는 페이지(예: 파일 미배포)는 안내만 표시 */
   if (!data || !Array.isArray(data.indicators) || !data.indicators.length) {
     nav.innerHTML = "";
     while (sparkCharts.length) sparkCharts.pop().destroy();
-    grid.innerHTML =
-      '<div class="cat-group-title">산업별 지표 데이터(sector.json)가 아직 없습니다. 수집 스크립트 실행 후 갱신됩니다.</div>';
+    grid.innerHTML = `<div class="cat-group-title">${cfg.file} 데이터가 아직 없습니다. 수집 스크립트 실행 후 갱신됩니다.</div>`;
     return;
   }
 
@@ -186,7 +191,7 @@ function renderIndicators(cfg, data, filterCat) {
   const grid = document.getElementById("indicators");
   grid.innerHTML = "";
 
-  /* (1) 일간 주가 카드 */
+  /* (1) 지표 카드 */
   const cats = cfg.categories.filter((c) =>
     data.indicators.some((i) => i.category === c && (filterCat === "전체" || i.category === filterCat))
   );
@@ -199,26 +204,8 @@ function renderIndicators(cfg, data, filterCat) {
     items.forEach((ind) => grid.appendChild(makeCard(ind)));
   });
 
-  /* (2) 선행지표 카드 (산업 페이지 전용) */
-  const lead = PAGE_DATA.leading;
-  const hasLead = currentPage === "sector" && lead && Array.isArray(lead.indicators);
-  if (hasLead) {
-    const leadCats = cfg.categories.filter((c) =>
-      lead.indicators.some((i) => i.category === c && (filterCat === "전체" || i.category === filterCat))
-    );
-    leadCats.forEach((cat) => {
-      const items = lead.indicators.filter(
-        (i) => i.category === cat && (filterCat === "전체" || i.category === filterCat)
-      );
-      if (!items.length) return;
-      appendGroupTitle(grid, cat + " · 선행지표");
-      items.forEach((ind) => grid.appendChild(makeCard(ind)));
-    });
-  }
-
-  /* (3) 스파크라인 (일간 + 선행 모두) */
-  const allInds = data.indicators.concat(hasLead ? lead.indicators : []);
-  allInds.forEach((ind) => {
+  /* (2) 스파크라인 */
+  data.indicators.forEach((ind) => {
     const canvas = document.getElementById("spark-" + cssId(ind.name));
     if (canvas && ind.chart) drawSparkline(canvas, ind);
   });
