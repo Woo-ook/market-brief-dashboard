@@ -1,0 +1,23 @@
+{
+  "note": "산업별 주가 모니터링 대상. source는 FDR 또는 yfinance. 필요하면 종목을 추가/삭제하세요.",
+  "indicators": [
+    {"category": "반도체", "name": "삼성전자", "source": "FDR", "ticker": "005930", "currency": "KRW"},
+    {"category": "반도체", "name": "SK하이닉스", "source": "FDR", "ticker": "000660", "currency": "KRW"},
+    {"category": "반도체", "name": "마이크론 (MU)", "source": "yfinance", "ticker": "MU", "currency": "USD"},
+    {"category": "반도체", "name": "샌디스크 (SNDK)", "source": "yfinance", "ticker": "SNDK", "currency": "USD"},
+
+    {"category": "조선", "name": "HD한국조선해양", "source": "FDR", "ticker": "009540", "currency": "KRW"},
+    {"category": "조선", "name": "HD현대중공업", "source": "FDR", "ticker": "329180", "currency": "KRW"},
+    {"category": "조선", "name": "삼성중공업", "source": "FDR", "ticker": "010140", "currency": "KRW"},
+    {"category": "조선", "name": "한화오션", "source": "FDR", "ticker": "042660", "currency": "KRW"},
+
+    {"category": "소프트웨어", "name": "알파벳 (GOOGL)", "source": "yfinance", "ticker": "GOOGL", "currency": "USD"},
+    {"category": "소프트웨어", "name": "마이크로소프트 (MSFT)", "source": "yfinance", "ticker": "MSFT", "currency": "USD"},
+    {"category": "소프트웨어", "name": "메타 (META)", "source": "yfinance", "ticker": "META", "currency": "USD"},
+    {"category": "소프트웨어", "name": "오라클 (ORCL)", "source": "yfinance", "ticker": "ORCL", "currency": "USD"},
+    {"category": "소프트웨어", "name": "팔란티어 (PLTR)", "source": "yfinance", "ticker": "PLTR", "currency": "USD"},
+    {"category": "소프트웨어", "name": "NAVER", "source": "FDR", "ticker": "035420", "currency": "KRW"},
+    {"category": "소프트웨어", "name": "삼성에스디에스", "source": "FDR", "ticker": "018260", "currency": "KRW"},
+    {"category": "소프트웨어", "name": "LG CNS", "source": "FDR", "ticker": "064400", "currency": "KRW"}
+  ]
+}

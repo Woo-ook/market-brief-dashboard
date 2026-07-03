@@ -1,0 +1,65 @@
+{
+  "note": "무료 API로 안정 수집이 어려운 SIA/WSTS, TrendForce, Clarkson, 일부 IR 지표를 수동 또는 반자동으로 넣는 파일입니다. enabled=false이면 leading.json에 반영하지 않습니다.",
+  "indicators": [
+    {
+      "enabled": false,
+      "name": "SIA 글로벌 반도체 매출",
+      "category": "반도체",
+      "freq": "월간",
+      "value_text": "$—B",
+      "date": "YYYY-MM",
+      "change_text": "전월 —% · 전년 —%",
+      "state": "판단 보류",
+      "signal_level": 1,
+      "comment": "SIA/WSTS 월간 글로벌 반도체 매출입니다. 업황 전체를 보는 핵심 지표이며, 무료 보도자료 값을 확인해 수동 입력합니다.",
+      "source": "SIA/WSTS",
+      "ok": true,
+      "chart": null
+    },
+    {
+      "enabled": false,
+      "name": "DRAM 현물가",
+      "category": "반도체",
+      "freq": "주간",
+      "value_text": "$—",
+      "date": "YYYY-MM-DD",
+      "change_text": "1주 —% · 1개월 —%",
+      "state": "판단 보류",
+      "signal_level": 1,
+      "comment": "TrendForce/DRAMeXchange 공개 범위 내 DRAM 현물가입니다. 메모리 업황의 가격 사이클 확인용입니다.",
+      "source": "TrendForce/DRAMeXchange 공개자료",
+      "ok": true,
+      "chart": null
+    },
+    {
+      "enabled": false,
+      "name": "Clarkson 신조선가지수",
+      "category": "조선",
+      "freq": "주간",
+      "value_text": "—",
+      "date": "YYYY-MM-DD",
+      "change_text": "1개월 —p · 전년 —p",
+      "state": "판단 보류",
+      "signal_level": 1,
+      "comment": "신조선가 방향은 조선사 수익성의 핵심 선행지표입니다. 원지표가 제한적이므로 공개 기사 또는 보유 데이터 기준으로 수동 입력합니다.",
+      "source": "Clarksons Research 공개 기사/AsiaSIS/수동입력",
+      "ok": true,
+      "chart": null
+    },
+    {
+      "enabled": false,
+      "name": "국내 조선사 수주잔고",
+      "category": "조선",
+      "freq": "분기",
+      "value_text": "—조원",
+      "date": "YYYY-Q#",
+      "change_text": "전분기 —% · 전년 —%",
+      "state": "판단 보류",
+      "signal_level": 1,
+      "comment": "조선사 IR/분기보고서의 수주잔고 합산입니다. 선가와 함께 중기 매출 가시성을 보는 지표입니다.",
+      "source": "기업 IR/DART",
+      "ok": true,
+      "chart": null
+    }
+  ]
+}

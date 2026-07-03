@@ -4,7 +4,7 @@
 const PAGES = {
   macro: {
     file: "data.json",
-    categories: ["이격도", "환율", "금리", "위험·변동성", "기타"],
+    categories: ["이격도", "환율", "금리", "위험·변동성", "원자재", "기타"],
     showRegime: true,
   },
   sector: {
@@ -243,7 +243,10 @@ function makeCard(ind) {
 }
 
 function primarySeries(chart) {
-  return chart.type === "disparity" ? chart.series.disparity : chart.series.value;
+  if (!chart || !chart.series) return [];
+  if (chart.type === "disparity" && Array.isArray(chart.series.disparity)) return chart.series.disparity;
+  if (chart.type === "multi_ma") return chart.series.close || chart.series.ma20 || chart.series.ma5 || [];
+  return chart.series.value || chart.series.close || chart.series.disparity || [];
 }
 
 function drawSparkline(canvas, ind) {
@@ -323,10 +326,30 @@ function buildModalChart(ind) {
         pointRadius: 0,
       });
     });
+  } else if (chart.type === "multi_ma") {
+    const maDefs = [
+      ["종가", "close", color, 2.2],
+      ["5일선", "ma5", "#9aa4b2", 1.2],
+      ["20일선", "ma20", "#4a9eff", 1.2],
+      ["60일선", "ma60", "#f1c40f", 1.2],
+      ["120일선", "ma120", "#e67e22", 1.2],
+    ];
+    maDefs.forEach(([label, key, col, width]) => {
+      if (!Array.isArray(chart.series[key])) return;
+      datasets.push({
+        label,
+        data: chart.series[key],
+        borderColor: col,
+        borderWidth: width,
+        pointRadius: 0,
+        tension: 0.15,
+        spanGaps: true,
+      });
+    });
   } else {
     datasets.push({
       label: ind.name,
-      data: chart.series.value,
+      data: chart.series.value || chart.series.close || [],
       borderColor: color,
       borderWidth: 2,
       pointRadius: 0,
@@ -342,7 +365,10 @@ function buildModalChart(ind) {
       maintainAspectRatio: false,
       interaction: { mode: "index", intersect: false },
       plugins: {
-        legend: { display: chart.type === "disparity", labels: { color: "#9aa4b2", boxWidth: 18, font: { size: 11 } } },
+        legend: {
+          display: chart.type === "disparity" || chart.type === "multi_ma",
+          labels: { color: "#9aa4b2", boxWidth: 18, font: { size: 11 } },
+        },
         tooltip: { enabled: true },
       },
       scales: {
