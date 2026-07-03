@@ -17,7 +17,7 @@ const PAGES = {
 const SIG_COLORS = ["#2ecc71", "#f1c40f", "#e67e22", "#e74c3c"];
 
 let currentPage = "macro";
-const PAGE_DATA = { macro: null, sector: null };
+const PAGE_DATA = { macro: null, sector: null, leading: null };
 let modalChart = null;
 const sparkCharts = [];
 
@@ -38,6 +38,13 @@ async function init() {
     PAGE_DATA.sector = await loadJson(PAGES.sector.file);
   } catch (e) {
     console.warn("sector.json 없음 또는 로딩 실패 — 산업 탭은 안내만 표시됩니다.", e);
+  }
+
+  /* 3) 선행지표(선택) 로딩 — 파일이 없어도 산업 주가 카드는 정상 동작 */
+  try {
+    PAGE_DATA.leading = await loadJson("leading.json");
+  } catch (e) {
+    console.warn("leading.json 없음 또는 로딩 실패 — 선행지표 섹션은 생략됩니다.", e);
   }
 
   const macro = PAGE_DATA.macro;
@@ -79,7 +86,9 @@ function renderPage(page) {
   /* 산업 페이지 기준 시각 표시 */
   const meta = document.getElementById("sector-meta");
   if (page === "sector" && data) {
-    meta.textContent = "산업 지표 기준: " + (data.generated_at || "");
+    const lead = PAGE_DATA.leading;
+    const leadTxt = lead && lead.generated_at ? " · 선행지표 기준: " + lead.generated_at : "";
+    meta.textContent = "산업 주가 기준: " + (data.generated_at || "") + leadTxt;
     meta.style.display = "";
   } else {
     meta.style.display = "none";
@@ -164,31 +173,52 @@ function renderNav(cfg, data) {
 }
 
 /* ── 지표 카드 ── */
+function appendGroupTitle(grid, text) {
+  const title = document.createElement("div");
+  title.className = "cat-group-title";
+  title.textContent = text;
+  grid.appendChild(title);
+}
+
 function renderIndicators(cfg, data, filterCat) {
   while (sparkCharts.length) sparkCharts.pop().destroy();
 
   const grid = document.getElementById("indicators");
   grid.innerHTML = "";
 
+  /* (1) 일간 주가 카드 */
   const cats = cfg.categories.filter((c) =>
     data.indicators.some((i) => i.category === c && (filterCat === "전체" || i.category === filterCat))
   );
-
   cats.forEach((cat) => {
     const items = data.indicators.filter(
       (i) => i.category === cat && (filterCat === "전체" || i.category === filterCat)
     );
     if (!items.length) return;
-    if (filterCat === "전체") {
-      const title = document.createElement("div");
-      title.className = "cat-group-title";
-      title.textContent = cat;
-      grid.appendChild(title);
-    }
+    if (filterCat === "전체") appendGroupTitle(grid, cat);
     items.forEach((ind) => grid.appendChild(makeCard(ind)));
   });
 
-  data.indicators.forEach((ind) => {
+  /* (2) 선행지표 카드 (산업 페이지 전용) */
+  const lead = PAGE_DATA.leading;
+  const hasLead = currentPage === "sector" && lead && Array.isArray(lead.indicators);
+  if (hasLead) {
+    const leadCats = cfg.categories.filter((c) =>
+      lead.indicators.some((i) => i.category === c && (filterCat === "전체" || i.category === filterCat))
+    );
+    leadCats.forEach((cat) => {
+      const items = lead.indicators.filter(
+        (i) => i.category === cat && (filterCat === "전체" || i.category === filterCat)
+      );
+      if (!items.length) return;
+      appendGroupTitle(grid, cat + " · 선행지표");
+      items.forEach((ind) => grid.appendChild(makeCard(ind)));
+    });
+  }
+
+  /* (3) 스파크라인 (일간 + 선행 모두) */
+  const allInds = data.indicators.concat(hasLead ? lead.indicators : []);
+  allInds.forEach((ind) => {
     const canvas = document.getElementById("spark-" + cssId(ind.name));
     if (canvas && ind.chart) drawSparkline(canvas, ind);
   });
@@ -198,9 +228,10 @@ function makeCard(ind) {
   const card = document.createElement("div");
   const hasChart = !!ind.chart;
   card.className = `card sig-${ind.signal_level}${hasChart ? "" : " no-chart"}`;
+  const freqBadge = ind.freq ? `<span class="freq-badge">${escapeHtml(ind.freq)}</span>` : "";
   card.innerHTML = `
     <div class="card-top">
-      <span class="card-name">${escapeHtml(ind.name)}</span>
+      <span class="card-name">${escapeHtml(ind.name)}${freqBadge}</span>
       <span class="card-state state-${ind.signal_level}">${escapeHtml(ind.state || "")}</span>
     </div>
     <div class="card-value">${ind.ok ? escapeHtml(ind.value_text || "—") : "수집 실패"}</div>
