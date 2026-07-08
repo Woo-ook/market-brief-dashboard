@@ -87,7 +87,7 @@ DISPARITY_SPECS = {
     "KOSDAQ 50일 이격도": (["KQ11"], ["^KQ11"], ""),
     "S&P500 50일 이격도": (["US500", "S&P500"], ["^GSPC"], ""),
     "NASDAQ 50일 이격도": (["IXIC", "NASDAQCOM"], ["^IXIC"], ""),
-    "SOX 반도체지수 50일 이격도": ([], ["^SOX"], ""),
+    "SOX 반도체지수 50일 이격도": (["^SOX"], ["^SOX"], ""),
     "삼성전자 50일 이격도": (["005930"], ["005930.KS"], "원"),
     "SK하이닉스 50일 이격도": (["000660"], ["000660.KS"], "원"),
 }
@@ -95,12 +95,12 @@ DISPARITY_SPECS = {
 # 레벨(가격) 차트: 이름 → (fdr_symbols, yf_symbols)
 LEVEL_SPECS = {
     "원/달러 환율": (["USD/KRW"], ["KRW=X"]),
-    "DXY 달러인덱스": ([], ["DX-Y.NYB", "^NYICDX"]),
-    "USD/CNH": ([], ["CNH=X"]),
-    "USD/JPY": ([], ["JPY=X"]),
-    "WTI 유가": ([], ["CL=F"]),
+    "DXY 달러인덱스": (["DX-Y.NYB"], ["DX-Y.NYB", "^NYICDX"]),
+    "USD/CNH": (["USD/CNY"], ["CNH=X"]),
+    "USD/JPY": (["USD/JPY"], ["JPY=X"]),
+    "WTI 유가": (["CL=F"], ["CL=F"]),
     "VIX 지수": (["VIX"], ["^VIX"]),
-    "MOVE 지수": ([], ["^MOVE"]),
+    "MOVE 지수": (["^MOVE"], ["^MOVE"]),
 }
 
 # FRED 시계열 차트: 이름 → series_id

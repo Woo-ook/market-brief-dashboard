@@ -103,6 +103,19 @@ def load_close(spec: Dict[str, Any], lookback_days: int = 900) -> pd.Series:
         return df["Close"].dropna().astype(float)
 
     if source == "yfinance":
+        # FDR을 먼저 시도한다: requests 기반이라 클라우드 프록시를 통과하며,
+        # 미국 티커(GOOGL/MSFT/MU 등)도 동일 심볼로 지원한다. yfinance/curl_cffi가
+        # 막히는 환경(Claude 루틴 샌드박스)에서도 데이터를 얻기 위함. 실패 시 yfinance 폴백.
+        if fdr is not None:
+            try:
+                df = fdr.DataReader(ticker, start.isoformat(), end.isoformat())
+                if df is not None and not df.empty and "Close" in df.columns:
+                    s = df["Close"].dropna().astype(float)
+                    if not s.empty:
+                        return s
+            except Exception:
+                pass
+
         df = yf.download(
             ticker,
             start=start.isoformat(),

@@ -29,6 +29,11 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 import yfinance as yf
 
+try:
+    import FinanceDataReader as fdr
+except Exception:  # noqa: BLE001
+    fdr = None
+
 KST = dt.timezone(dt.timedelta(hours=9))
 
 
@@ -106,27 +111,38 @@ def load_close_series(ticker: str, fallback_ticker: str, years: int = 5) -> Tupl
     end = today_kst() + dt.timedelta(days=1)
     start = end - dt.timedelta(days=int(365.25 * years) + 120)
 
+    def _via_fdr(tk: str) -> Optional[pd.Series]:
+        # FinanceDataReader는 requests 기반이라 클라우드 프록시를 통과한다
+        # (yfinance/curl_cffi가 막히는 환경 대응). GC=F/SI=F/HG=F 등 동일 심볼 지원.
+        if fdr is None:
+            return None
+        df = fdr.DataReader(tk, start.isoformat(), end.isoformat())
+        if df is None or df.empty or "Close" not in df.columns:
+            return None
+        return df["Close"].dropna().astype(float)
+
+    def _via_yf(tk: str) -> Optional[pd.Series]:
+        df = yf.download(
+            tk,
+            start=start.isoformat(),
+            end=end.isoformat(),
+            auto_adjust=True,
+            progress=False,
+            threads=False,
+        )
+        if df is None or df.empty:
+            return None
+        close = df["Close"].iloc[:, 0] if isinstance(df.columns, pd.MultiIndex) else df["Close"]
+        return close.dropna().astype(float)
+
     for tk in (ticker, fallback_ticker):
-        try:
-            df = yf.download(
-                tk,
-                start=start.isoformat(),
-                end=end.isoformat(),
-                auto_adjust=True,
-                progress=False,
-                threads=False,
-            )
-            if df is None or df.empty:
+        for loader in (_via_fdr, _via_yf):
+            try:
+                close = loader(tk)
+                if close is not None and len(close) >= 260:
+                    return close, tk
+            except Exception:
                 continue
-            if isinstance(df.columns, pd.MultiIndex):
-                close = df["Close"].iloc[:, 0]
-            else:
-                close = df["Close"]
-            close = close.dropna().astype(float)
-            if len(close) >= 260:
-                return close, tk
-        except Exception:
-            continue
     raise RuntimeError(f"No usable price data for {ticker} or {fallback_ticker}")
 
 

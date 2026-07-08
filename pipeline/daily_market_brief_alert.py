@@ -928,8 +928,10 @@ def make_yfinance_level_indicator(
     yf_symbols: List[str],
     interpret_func: Callable[[float, float], tuple[str, str, int]],
     unit: str = "",
+    fdr_symbols: Optional[List[str]] = None,
 ) -> IndicatorResult:
-    close, source = get_price_series(fdr_symbols=[], yf_symbols=yf_symbols)
+    # FDR을 우선 시도한다(클라우드 프록시에서 yfinance/curl_cffi가 막히는 환경 대응).
+    close, source = get_price_series(fdr_symbols=fdr_symbols or [], yf_symbols=yf_symbols)
     if len(close) < 2:
         raise RuntimeError(f"{name}: 데이터가 부족합니다.")
     last = float(close.iloc[-1])
@@ -974,7 +976,7 @@ def interpret_move(level: float, pct_change: float, pct_20d: Optional[float] = N
 
 
 def make_move_indicator() -> IndicatorResult:
-    close, source = get_price_series(fdr_symbols=[], yf_symbols=["^MOVE", "MOVE"])
+    close, source = get_price_series(fdr_symbols=["^MOVE"], yf_symbols=["^MOVE", "MOVE"])
     if len(close) < 21:
         raise RuntimeError("MOVE 20일 변화율 계산에 필요한 데이터가 부족합니다.")
     last = float(close.iloc[-1])
@@ -3732,7 +3734,7 @@ def collect_indicators() -> List[IndicatorResult]:
             "SOX 반도체지수 50일 이격도",
             lambda: make_disparity_indicator(
                 "SOX 반도체지수 50일 이격도",
-                fdr_symbols=[],
+                fdr_symbols=["^SOX"],
                 yf_symbols=["^SOX"],
             ),
         ),
@@ -3759,15 +3761,15 @@ def collect_indicators() -> List[IndicatorResult]:
             "DXY 달러인덱스",
             lambda: make_level_indicator(
                 "DXY 달러인덱스",
-                fdr_symbols=[],
+                fdr_symbols=["DX-Y.NYB"],
                 yf_symbols=["DX-Y.NYB", "^NYICDX"],
                 interpret_func=interpret_dxy,
                 unit="",
             ),
         ),
-        safe_call("USD/CNH", lambda: make_yfinance_level_indicator("USD/CNH", ["CNH=X"], interpret_usd_cnh, unit="")),
-        safe_call("USD/JPY", lambda: make_yfinance_level_indicator("USD/JPY", ["JPY=X"], interpret_usd_jpy, unit="")),
-        safe_call("WTI 유가", lambda: make_yfinance_level_indicator("WTI 유가", ["CL=F"], interpret_wti, unit="달러")),
+        safe_call("USD/CNH", lambda: make_yfinance_level_indicator("USD/CNH", ["CNH=X"], interpret_usd_cnh, unit="", fdr_symbols=["USD/CNY"])),
+        safe_call("USD/JPY", lambda: make_yfinance_level_indicator("USD/JPY", ["JPY=X"], interpret_usd_jpy, unit="", fdr_symbols=["USD/JPY"])),
+        safe_call("WTI 유가", lambda: make_yfinance_level_indicator("WTI 유가", ["CL=F"], interpret_wti, unit="달러", fdr_symbols=["CL=F"])),
         safe_call("미국 2년물 금리", lambda: make_us_yield_indicator("미국 2년물 금리", "DGS2")),
         safe_call("미국 3개월물 금리", lambda: make_us_yield_indicator("미국 3개월물 금리", "DGS3MO")),
         safe_call("Fed Funds 금리", lambda: make_us_yield_indicator("Fed Funds 금리", "DFF")),
