@@ -1,0 +1,6 @@
+# Google Cloud console export — contains plaintext credentials (GitHub PAT). Do NOT commit.
+google_console/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
