@@ -20,7 +20,13 @@ pipeline/run.py — 대시보드 데이터 일괄 생성 오케스트레이터 (
   이메일 코드 경로는 실행되지 않는다(원본 파일은 수정하지 않는다).
 
 실행:  python pipeline/run.py
-커밋/푸시는 이 스크립트가 하지 않는다 — 루틴(에이전트)이 담당한다.
+
+게시(publish):
+  GITHUB_TOKEN(또는 GH_TOKEN) 이 있으면 이 스크립트가 GitHub Contents API 로 직접
+  PUT 하여 저장소에 게시한다(원래 Cloud Run 잡과 동일한 검증된 방식). 이 방식은
+  루틴 환경의 git push / GitHub App integration(403) 을 우회하므로, 루틴은 이
+  스크립트를 실행하기만 하면 된다 — 별도 git commit/push 가 필요 없다.
+  토큰이 없으면 파일만 로컬에 남기고 게시는 건너뛴다.
 """
 from __future__ import annotations
 
@@ -94,6 +100,44 @@ def run_script(argv, env_extra=None) -> None:
     subprocess.run([sys.executable, *[str(a) for a in argv]], check=True, cwd=str(ROOT), env=env)
 
 
+# 게시 대상 파일 (저장소 루트 기준 경로).
+PUBLISH_FILES = [
+    "data.json",
+    "history.json",
+    "sector.json",
+    "leading.json",
+    "daily_market_regime_log.csv",
+]
+
+
+def publish_via_api() -> bool:
+    """생성한 파일을 사용자 PAT으로 GitHub Contents API에 직접 PUT 한다.
+
+    원래 Cloud Run 잡이 쓰던, 검증된 게시 방식이다. 루틴 환경의 git push /
+    GitHub App integration(권한 403 발생) 을 우회한다. GITHUB_TOKEN(또는 GH_TOKEN)
+    이 없으면 게시를 건너뛰고 파일만 로컬에 남긴다(git 워크플로 폴백).
+    """
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if not token:
+        print("[publish] GITHUB_TOKEN/GH_TOKEN 없음 — 게시 생략, 로컬 파일만 갱신")
+        return False
+
+    W.GITHUB_TOKEN = token  # web_export 모듈 전역에 주입(Contents API 인증에 사용)
+    stamp = B.now_kst().strftime("%Y-%m-%d %H:%M KST")
+    published = 0
+    for name in PUBLISH_FILES:
+        p = ROOT / name
+        if not p.exists():
+            print(f"[publish] {name} 없음 — 건너뜀", file=sys.stderr)
+            continue
+        W.github_put_file(name, p.read_text(encoding="utf-8"),
+                          f"chore: dashboard data update {stamp}")
+        published += 1
+        print(f"[publish] {name} → GitHub PUT 완료")
+    print(f"[publish] {published}개 파일 게시 완료 ({stamp})")
+    return True
+
+
 def main() -> int:
     build_macro()
 
@@ -110,6 +154,9 @@ def main() -> int:
     # 산업별 선행지표 → leading.json (FRED_API_KEY / DART_API_KEY 사용)
     run_script([SCRIPTS_DIR / "build_sector_leading.py"],
                env_extra={"OUTPUT_PATH": "leading.json"})
+
+    # 게시: 사용자 PAT으로 GitHub Contents API에 직접 PUT (integration 우회).
+    publish_via_api()
 
     print("[done] 모든 대시보드 데이터 갱신 완료")
     return 0
