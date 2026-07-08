@@ -19,12 +19,18 @@ const PAGES = {
     showRegime: false,
     metaLabel: "산업별 선행지표 기준",
   },
+  flow: {
+    file: "flow.json",
+    categories: ["해외", "기관", "개인"],
+    showRegime: false,
+    metaLabel: "투자자 수급 기준",
+  },
 };
 
 const SIG_COLORS = ["#2ecc71", "#f1c40f", "#e67e22", "#e74c3c"];
 
 let currentPage = "macro";
-const PAGE_DATA = { macro: null, sector: null, leading: null };
+const PAGE_DATA = { macro: null, sector: null, leading: null, flow: null };
 let modalChart = null;
 const sparkCharts = [];
 
@@ -49,6 +55,12 @@ async function init() {
     PAGE_DATA.leading = await loadJson(PAGES.leading.file);
   } catch (e) {
     console.warn("leading.json 없음 또는 로딩 실패", e);
+  }
+
+  try {
+    PAGE_DATA.flow = await loadJson(PAGES.flow.file);
+  } catch (e) {
+    console.warn("flow.json 없음 또는 로딩 실패", e);
   }
 
   const macro = PAGE_DATA.macro || {};
@@ -231,6 +243,7 @@ function primarySeries(chart) {
   if (!chart || !chart.series) return [];
   if (chart.type === "disparity") return chart.series.disparity || [];
   if (chart.type === "multi_ma") return chart.series.close || chart.series.ma20 || chart.series.ma5 || [];
+  if (chart.type === "flow_daily") return chart.series.cum || chart.series.value || [];
   return chart.series.value || [];
 }
 
@@ -270,6 +283,8 @@ function openModal(ind) {
     `${ind.value_text || ""}  ·  ${ind.state || ""}  ·  ${ind.change_text || ""}  ·  ${ind.date || ""}`;
   document.getElementById("modal-comment").textContent = ind.comment || "";
   document.getElementById("modal-mdd").textContent = ind.mdd_line || "";
+
+  renderFlowDetail(ind);
 
   if (modalChart) modalChart.destroy();
   modalChart = buildModalChart(ind);
@@ -317,6 +332,29 @@ function buildModalChart(ind) {
       if (!chart.series[key]) return;
       datasets.push({ label, data: chart.series[key], borderColor: col, borderWidth: width, pointRadius: 0, tension: 0.15 });
     });
+  } else if (chart.type === "flow_daily") {
+    const daily = chart.series.value || [];
+    const cum = chart.series.cum || [];
+    const barColors = daily.map((v) => (v >= 0 ? "rgba(46,204,113,0.45)" : "rgba(231,76,60,0.45)"));
+    datasets.push({
+      type: "bar",
+      label: "일별 순매수(억원)",
+      data: daily,
+      backgroundColor: barColors,
+      borderWidth: 0,
+      order: 2,
+    });
+    const cumColor = cum.length && cum[cum.length - 1] >= 0 ? "#2ecc71" : "#e74c3c";
+    datasets.push({
+      type: "line",
+      label: "누적 순매수(억원)",
+      data: cum,
+      borderColor: cumColor,
+      borderWidth: 2,
+      pointRadius: 0,
+      tension: 0.15,
+      order: 1,
+    });
   } else {
     datasets.push({
       label: ind.name,
@@ -345,6 +383,71 @@ function buildModalChart(ind) {
       },
     },
   });
+}
+
+function jsFmtWon(x) {
+  if (x == null || !isFinite(x)) return "—";
+  const sign = x >= 0 ? "+" : "-";
+  const v = Math.abs(Number(x));
+  const jo = 1e12, eok = 1e8;
+  if (v >= jo) return sign + (v / jo).toFixed(2) + "조";
+  if (v >= eok) return sign + Math.round(v / eok).toLocaleString() + "억";
+  return sign + Math.round(v).toLocaleString() + "원";
+}
+
+function renderFlowDetail(ind) {
+  const el = document.getElementById("modal-flow");
+  if (!el) return;
+  const buys = ind.top_buys || [];
+  const sells = ind.top_sells || [];
+  const sectors = ind.sector_flow || [];
+  if (!buys.length && !sells.length && !sectors.length) {
+    el.innerHTML = "";
+    return;
+  }
+
+  const rankRows = (arr, cls) => {
+    const maxAbs = Math.max(1, ...arr.map((x) => Math.abs(x.net_value)));
+    return arr
+      .map((x) => {
+        const w = Math.max(3, (Math.abs(x.net_value) / maxAbs) * 100);
+        const sec = x.sector ? `<span class="flow-sec">${escapeHtml(x.sector)}</span>` : "";
+        return `<div class="flow-row">
+          <span class="flow-nm">${escapeHtml(x.name)}${sec}</span>
+          <span class="flow-bar-wrap"><span class="flow-bar ${cls}" style="width:${w}%"></span></span>
+          <span class="flow-amt ${cls}">${escapeHtml(jsFmtWon(x.net_value))}</span>
+        </div>`;
+      })
+      .join("");
+  };
+
+  const secMax = Math.max(1, ...sectors.map((x) => Math.abs(x.net_value)));
+  const secRows = sectors
+    .map((x) => {
+      const pos = x.net_value >= 0;
+      const w = (Math.abs(x.net_value) / secMax) * 50;
+      const barStyle = pos ? `left:50%;width:${w}%` : `right:50%;width:${w}%`;
+      return `<div class="sec-row">
+        <span class="sec-nm">${escapeHtml(x.sector)}</span>
+        <span class="sec-track"><span class="sec-bar ${pos ? "buy" : "sell"}" style="${barStyle}"></span></span>
+        <span class="flow-amt ${pos ? "buy" : "sell"}">${escapeHtml(jsFmtWon(x.net_value))}</span>
+      </div>`;
+    })
+    .join("");
+
+  el.innerHTML = `
+    <div class="flow-cols">
+      <div class="flow-col">
+        <h4 class="flow-h buy">순매수 상위 (돈 유입)</h4>
+        ${buys.length ? rankRows(buys, "buy") : '<p class="flow-empty">없음</p>'}
+      </div>
+      <div class="flow-col">
+        <h4 class="flow-h sell">순매도 상위 (돈 유출)</h4>
+        ${sells.length ? rankRows(sells, "sell") : '<p class="flow-empty">없음</p>'}
+      </div>
+    </div>
+    ${sectors.length ? `<h4 class="flow-h">섹터별 순매수 흐름</h4><div class="sec-list">${secRows}</div>` : ""}
+  `;
 }
 
 function escapeHtml(s) {

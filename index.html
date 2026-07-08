@@ -24,6 +24,7 @@
       <button class="page-btn active" data-page="macro">거시 지표</button>
       <button class="page-btn" data-page="sector">산업별 주가</button>
       <button class="page-btn" data-page="leading">산업별 선행지표</button>
+      <button class="page-btn" data-page="flow">자금 흐름</button>
     </nav>
 
     <section id="regime" class="regime-section"></section>
@@ -46,12 +47,13 @@
       <h2 id="modal-title"></h2>
       <div id="modal-meta" class="modal-meta"></div>
       <div class="chart-wrap"><canvas id="modal-chart"></canvas></div>
+      <div id="modal-flow" class="modal-flow"></div>
       <p id="modal-comment" class="modal-comment"></p>
       <p id="modal-mdd" class="modal-mdd"></p>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="app.js?v=20260703-stable-leading"></script>
+  <script src="app.js?v=20260708-flow"></script>
 </body>
 </html>

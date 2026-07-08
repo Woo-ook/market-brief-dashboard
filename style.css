@@ -234,6 +234,35 @@ main {
 .modal-comment { font-size: 14px; color: var(--text); margin-bottom: 8px; }
 .modal-mdd { font-size: 12px; color: var(--text-faint); }
 
+/* ── 자금 흐름 상세 (모달) ── */
+.modal-flow { margin-bottom: 16px; }
+.modal-flow:empty { display: none; }
+.flow-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.flow-col { min-width: 0; }
+.flow-h { font-size: 12px; font-weight: 700; margin: 6px 0 8px; color: var(--text-dim); }
+.flow-h.buy { color: var(--green); }
+.flow-h.sell { color: var(--red); }
+.flow-row { display: grid; grid-template-columns: 1fr 34% auto; align-items: center; gap: 8px; padding: 3px 0; }
+.flow-nm { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.flow-sec { display: block; font-size: 10px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.flow-bar-wrap { background: #11161d; border-radius: 4px; height: 8px; overflow: hidden; }
+.flow-bar { display: block; height: 100%; border-radius: 4px; }
+.flow-bar.buy { background: var(--green); }
+.flow-bar.sell { background: var(--red); }
+.flow-amt { font-size: 11px; font-weight: 700; text-align: right; white-space: nowrap; }
+.flow-amt.buy { color: var(--green); }
+.flow-amt.sell { color: var(--red); }
+.flow-empty { font-size: 12px; color: var(--text-faint); }
+
+.sec-list { margin-top: 4px; }
+.sec-row { display: grid; grid-template-columns: 38% 1fr auto; align-items: center; gap: 8px; padding: 2px 0; }
+.sec-nm { font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sec-track { position: relative; height: 10px; background: #11161d; border-radius: 4px; }
+.sec-track::before { content: ""; position: absolute; left: 50%; top: -1px; bottom: -1px; width: 1px; background: var(--text-faint); opacity: 0.5; }
+.sec-bar { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+.sec-bar.buy { background: var(--green); }
+.sec-bar.sell { background: var(--red); }
+
 .footer {
   max-width: 1100px;
   margin: 24px auto 40px;
@@ -245,4 +274,5 @@ main {
   .driver-block { grid-template-columns: 1fr; }
   .card-value { font-size: 22px; }
   .chart-wrap { height: 260px; }
+  .flow-cols { grid-template-columns: 1fr; gap: 10px; }
 }
