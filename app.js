@@ -25,12 +25,18 @@ const PAGES = {
     showRegime: false,
     metaLabel: "투자자 수급 기준",
   },
+  us_flow: {
+    file: "us_flow.json",
+    categories: ["S&P 500", "NASDAQ 100"],
+    showRegime: false,
+    metaLabel: "미국 지수 수급 기준 (CFTC COT)",
+  },
 };
 
 const SIG_COLORS = ["#2ecc71", "#f1c40f", "#e67e22", "#e74c3c"];
 
 let currentPage = "macro";
-const PAGE_DATA = { macro: null, sector: null, leading: null, flow: null };
+const PAGE_DATA = { macro: null, sector: null, leading: null, flow: null, us_flow: null };
 let modalChart = null;
 const sparkCharts = [];
 
@@ -61,6 +67,12 @@ async function init() {
     PAGE_DATA.flow = await loadJson(PAGES.flow.file);
   } catch (e) {
     console.warn("flow.json 없음 또는 로딩 실패", e);
+  }
+
+  try {
+    PAGE_DATA.us_flow = await loadJson(PAGES.us_flow.file);
+  } catch (e) {
+    console.warn("us_flow.json 없음 또는 로딩 실패", e);
   }
 
   const macro = PAGE_DATA.macro || {};
@@ -335,10 +347,15 @@ function buildModalChart(ind) {
   } else if (chart.type === "flow_daily") {
     const daily = chart.series.value || [];
     const cum = chart.series.cum || [];
+    // 단위별 라벨: 억원(KRX 수급)=일별/누적 순매수, 계약(CFTC COT)=주간 변화/순포지션 레벨
+    const unit = chart.unit || "억원";
+    const isContracts = unit === "계약";
+    const barLabel = isContracts ? `주간 변화(${unit})` : `일별 순매수(${unit})`;
+    const lineLabel = isContracts ? `순포지션(${unit})` : `누적 순매수(${unit})`;
     const barColors = daily.map((v) => (v >= 0 ? "rgba(46,204,113,0.45)" : "rgba(231,76,60,0.45)"));
     datasets.push({
       type: "bar",
-      label: "일별 순매수(억원)",
+      label: barLabel,
       data: daily,
       backgroundColor: barColors,
       borderWidth: 0,
@@ -347,7 +364,7 @@ function buildModalChart(ind) {
     const cumColor = cum.length && cum[cum.length - 1] >= 0 ? "#2ecc71" : "#e74c3c";
     datasets.push({
       type: "line",
-      label: "누적 순매수(억원)",
+      label: lineLabel,
       data: cum,
       borderColor: cumColor,
       borderWidth: 2,
