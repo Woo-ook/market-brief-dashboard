@@ -31,12 +31,18 @@ const PAGES = {
     showRegime: false,
     metaLabel: "미국 지수 수급 기준 (CFTC COT)",
   },
+  liquidity: {
+    file: "liquidity.json",
+    categories: ["미국", "한국"],
+    showRegime: false,
+    metaLabel: "시장 유동성 기준",
+  },
 };
 
 const SIG_COLORS = ["#2ecc71", "#f1c40f", "#e67e22", "#e74c3c"];
 
 let currentPage = "macro";
-const PAGE_DATA = { macro: null, sector: null, leading: null, flow: null, us_flow: null };
+const PAGE_DATA = { macro: null, sector: null, leading: null, flow: null, us_flow: null, liquidity: null };
 let modalChart = null;
 const sparkCharts = [];
 
@@ -73,6 +79,12 @@ async function init() {
     PAGE_DATA.us_flow = await loadJson(PAGES.us_flow.file);
   } catch (e) {
     console.warn("us_flow.json 없음 또는 로딩 실패", e);
+  }
+
+  try {
+    PAGE_DATA.liquidity = await loadJson(PAGES.liquidity.file);
+  } catch (e) {
+    console.warn("liquidity.json 없음 또는 로딩 실패", e);
   }
 
   const macro = PAGE_DATA.macro || {};
