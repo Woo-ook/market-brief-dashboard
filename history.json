@@ -609,5 +609,18 @@
     "fear_buy": 27,
     "mania_reduce": 49,
     "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-07-17 18:09",
+    "final_label": "Neutral",
+    "risk": 62,
+    "overheating": 20,
+    "breadth": 12,
+    "fx_stress": 35,
+    "stability": 100,
+    "entry": 21,
+    "fear_buy": 27,
+    "mania_reduce": 46,
+    "final_timing": "관망 / 선별 접근"
   }
 ]
