@@ -791,5 +791,31 @@
     "fear_buy": 29,
     "mania_reduce": 46,
     "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-07-25 07:24",
+    "final_label": "Neutral",
+    "risk": 50,
+    "overheating": 20,
+    "breadth": 12,
+    "fx_stress": 35,
+    "stability": 78,
+    "entry": 9,
+    "fear_buy": 29,
+    "mania_reduce": 46,
+    "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-07-25 07:34",
+    "final_label": "Neutral",
+    "risk": 50,
+    "overheating": 20,
+    "breadth": 12,
+    "fx_stress": 35,
+    "stability": 78,
+    "entry": 9,
+    "fear_buy": 29,
+    "mania_reduce": 46,
+    "final_timing": "관망 / 선별 접근"
   }
 ]
