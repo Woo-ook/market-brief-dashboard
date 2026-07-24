@@ -778,5 +778,18 @@
     "fear_buy": 20,
     "mania_reduce": 40,
     "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-07-24 18:11",
+    "final_label": "Risk-On 쏠림장",
+    "risk": 66,
+    "overheating": 15,
+    "breadth": 12,
+    "fx_stress": 35,
+    "stability": 100,
+    "entry": 28,
+    "fear_buy": 29,
+    "mania_reduce": 46,
+    "final_timing": "관망 / 선별 접근"
   }
 ]
