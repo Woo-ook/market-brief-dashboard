@@ -908,5 +908,18 @@
     "fear_buy": 29,
     "mania_reduce": 46,
     "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-07-30 07:25",
+    "final_label": "Risk-Off",
+    "risk": 17,
+    "overheating": 25,
+    "breadth": 35,
+    "fx_stress": 33,
+    "stability": 50,
+    "entry": 0,
+    "fear_buy": 30,
+    "mania_reduce": 24,
+    "final_timing": "특별한 기회 없음"
   }
 ]
