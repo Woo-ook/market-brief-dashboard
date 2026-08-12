@@ -1246,5 +1246,31 @@
     "fear_buy": 17,
     "mania_reduce": 37,
     "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-08-12 18:10",
+    "final_label": "Risk-On",
+    "risk": 76,
+    "overheating": 10,
+    "breadth": 48,
+    "fx_stress": 20,
+    "stability": 100,
+    "entry": 53,
+    "fear_buy": 15,
+    "mania_reduce": 41,
+    "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-08-12 18:20",
+    "final_label": "Risk-On",
+    "risk": 76,
+    "overheating": 10,
+    "breadth": 50,
+    "fx_stress": 20,
+    "stability": 100,
+    "entry": 54,
+    "fear_buy": 15,
+    "mania_reduce": 20,
+    "final_timing": "특별한 기회 없음"
   }
 ]
