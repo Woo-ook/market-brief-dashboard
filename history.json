@@ -1402,5 +1402,31 @@
     "fear_buy": 9,
     "mania_reduce": 37,
     "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-08-21 07:24",
+    "final_label": "Risk-On 순환·확산",
+    "risk": 72,
+    "overheating": 10,
+    "breadth": 58,
+    "fx_stress": 0,
+    "stability": 100,
+    "entry": 55,
+    "fear_buy": 11,
+    "mania_reduce": 37,
+    "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-08-21 07:29",
+    "final_label": "Risk-On 순환·확산",
+    "risk": 72,
+    "overheating": 10,
+    "breadth": 58,
+    "fx_stress": 0,
+    "stability": 100,
+    "entry": 55,
+    "fear_buy": 11,
+    "mania_reduce": 37,
+    "final_timing": "관망 / 선별 접근"
   }
 ]
