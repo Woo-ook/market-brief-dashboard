@@ -1636,5 +1636,31 @@
     "fear_buy": 9,
     "mania_reduce": 43,
     "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-09-01 07:27",
+    "final_label": "Risk-On 쏠림장",
+    "risk": 74,
+    "overheating": 8,
+    "breadth": 22,
+    "fx_stress": 8,
+    "stability": 100,
+    "entry": 46,
+    "fear_buy": 9,
+    "mania_reduce": 45,
+    "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-09-01 07:37",
+    "final_label": "Risk-On 쏠림장",
+    "risk": 74,
+    "overheating": 8,
+    "breadth": 22,
+    "fx_stress": 8,
+    "stability": 100,
+    "entry": 46,
+    "fear_buy": 9,
+    "mania_reduce": 45,
+    "final_timing": "관망 / 선별 접근"
   }
 ]
