@@ -1857,5 +1857,18 @@
     "fear_buy": 5,
     "mania_reduce": 20,
     "final_timing": "특별한 기회 없음"
+  },
+  {
+    "run_date": "2026-09-11 07:27",
+    "final_label": "Risk-On",
+    "risk": 83,
+    "overheating": 0,
+    "breadth": 48,
+    "fx_stress": 16,
+    "stability": 78,
+    "entry": 65,
+    "fear_buy": 3,
+    "mania_reduce": 41,
+    "final_timing": "관망 / 선별 접근"
   }
 ]
