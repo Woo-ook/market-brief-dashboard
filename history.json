@@ -2013,5 +2013,18 @@
     "fear_buy": 9,
     "mania_reduce": 41,
     "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-09-19 07:22",
+    "final_label": "Risk-On",
+    "risk": 91,
+    "overheating": 0,
+    "breadth": 48,
+    "fx_stress": 0,
+    "stability": 78,
+    "entry": 75,
+    "fear_buy": 7,
+    "mania_reduce": 41,
+    "final_timing": "관망 / 선별 접근"
   }
 ]
