@@ -2065,5 +2065,18 @@
     "fear_buy": 11,
     "mania_reduce": 45,
     "final_timing": "관망 / 선별 접근"
+  },
+  {
+    "run_date": "2026-09-23 18:07",
+    "final_label": "Risk-On",
+    "risk": 95,
+    "overheating": 18,
+    "breadth": 48,
+    "fx_stress": 0,
+    "stability": 78,
+    "entry": 71,
+    "fear_buy": 7,
+    "mania_reduce": 45,
+    "final_timing": "관망 / 선별 접근"
   }
 ]
